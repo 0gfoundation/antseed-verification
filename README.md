@@ -12,7 +12,7 @@ _antseed.0g.ai TXT "antseed-peer=4f79b161cade6fc250d89c81e21fef37385d8a42"
 
 `z-ai/glm-5.3`, served by 0G's own GLM-5.3 deployment running inside a TDX confidential VM with the
 GPUs in NVIDIA Confidential Computing mode. Prices (USD per million tokens): input 1.40, cached input
-0.26, output 4.40.
+0.35, output 4.40.
 
 The seller forwards each request to `https://router-api.0g.ai`, whose TLS terminates inside the 0G E2EE
 gateway (a dstack CVM). For GLM-5.3 the gateway seals the request to the model provider's enclave key
