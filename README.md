@@ -1,11 +1,11 @@
 # 0G Confidential on AntSeed — ownership and TEE evidence
 
-Peer ID `4f79b161cade6fc250d89c81e21fef37385d8a42` (display name "0G Confidential") is operated by 0G.
+Peer ID `375f87baeb630772ff2d82292bc96a71dc333929` (display name "0G Confidential") is operated by 0G.
 The ownership proof in [antseed.json](antseed.json) and this DNS TXT record bind that identity to the
 `0gfoundation` GitHub organization and the `0g.ai` domain:
 
 ```text
-_antseed.0g.ai TXT "antseed-peer=4f79b161cade6fc250d89c81e21fef37385d8a42"
+_antseed.0g.ai TXT "antseed-peer=375f87baeb630772ff2d82292bc96a71dc333929"
 ```
 
 ## What the seller sells
@@ -30,7 +30,7 @@ this peer.
 
    ```bash
    antseed buyer start \
-     --peer 4f79b161cade6fc250d89c81e21fef37385d8a42 \
+     --peer 375f87baeb630772ff2d82292bc96a71dc333929 \
      --verifiers antseed-verifier \
      --require-verifier
    ```
@@ -81,7 +81,7 @@ server-side parties run in TDX; the 0G router between the gateway and the provid
 ## Primary sources
 
 - Ownership proof: [antseed.json](antseed.json) and `dig TXT _antseed.0g.ai`.
-- Seller discovery metadata: `antseed network peer 4f79b161cade6fc250d89c81e21fef37385d8a42`.
+- Seller discovery metadata: `antseed network peer 375f87baeb630772ff2d82292bc96a71dc333929`.
 - AntSeed verifier: [`packages/antseed-verifier`](https://github.com/AntSeed/antseed/tree/main/packages/antseed-verifier)
   (`caps/tee-tdx.ts`, `caps/seller-bound.ts`, `report-data.ts`).
 - Gateway verification guide: [`docs/verifying-the-gateway.md`](https://github.com/0gfoundation/0g-pc-e2ee/blob/main/docs/verifying-the-gateway.md).
