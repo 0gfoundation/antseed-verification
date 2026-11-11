@@ -24,6 +24,17 @@ OpenAI Chat Completions is the advertised protocol; the AntSeed buyer's protocol
 Anthropic Messages (Claude Code, including streaming tool use) and OpenAI Responses (Codex) requests to
 this peer.
 
+## How the seller node is deployed
+
+The seller runs Antseed's official TEE seller image
+(`ghcr.io/antseed/tee-seller@sha256:6ea1b6ef3d644e7fa0fd8c9e4c860d68ec136244cc379012029ac88172996f54`,
+release 0.1.240, built by Antseed's `tee-seller-image.yml` workflow from `main` with signed build
+provenance) as a dstack app with KMS on the dstack 0.6.1 production OS (`os_image_hash`
+`ec43cb8c5e04b6bb6c53b33b16076a01d83d01f7f4b703f2f78a0d947d6247e6`), with no pre-launch or init script.
+The compose file, including the seller config, the upstream URL and the prices, is sent to buyers with
+every attestation. Only the seller's identity key and its 0G router API key come in as encrypted
+environment variables.
+
 ## What a buyer can verify
 
 1. **Seller node** (`seller-node-tee-genuine`, `seller-bound`):
@@ -36,8 +47,19 @@ this peer.
    ```
 
    The node claim DCAP-verifies the seller CVM's TDX quote against Intel's root, checks the TCB status and
-   that debug mode is off, and checks the quote's binding to the buyer's nonce and this peer ID.
-   `seller-bound` checks the seller's AntSeed identity signature over the nonce and the evidence bundle.
+   that debug mode is off, and checks that the quote is bound to the buyer's nonce, this peer ID and the
+   buyer's own encrypted connection. With antseed-verifier 0.1.6 or later it also checks the CVM's OS
+   measurements (MRTD, RTMR0-2) against the dstack releases the verifier approves, replays RTMR3 to the
+   app compose, and checks that the compose runs an approved Antseed seller image under the TEE seller
+   rules. `seller-bound` checks the seller's AntSeed identity signature over the nonce and the evidence
+   bundle.
+
+   **Known issue (November 2026):** this seller's host runs QEMU 9.2.1. Its RTMR1 and RTMR2 match the
+   official dstack 0.6.1 release, but its MRTD and RTMR0 depend on the host's QEMU version and virtual
+   hardware and are not yet in the verifier's approved list, which was computed for one host profile
+   (QEMU 8.2.2). Buyers on antseed-verifier 0.1.6 or later therefore currently report
+   `seller-node-tee-genuine` as failed for this peer. Supporting other host profiles is being discussed
+   in [Antseed/antseed#1571](https://github.com/Antseed/antseed/pull/1571).
 
 2. **Gateway** (`seller-provider-tee-genuine`): the seller fetches a fresh
    quote from the 0G E2EE gateway using the buyer's nonce. The verifier DCAP-verifies it and checks that
@@ -58,11 +80,14 @@ this peer.
 
 ## What is NOT verified
 
-- The AntSeed verifier does not compare the seller CVM's measurements with approved software. With an
-  acceptable TCB, `seller-node-tee-genuine` passes for any genuine, non-debug TDX VM bound to your nonce
-  and this peer ID.
-- The seller's TLS connection to the gateway is not pinned to the attested key, so the attestations do not
-  prove that your request took that path.
+- The seller's TLS connection to the gateway is not pinned to the attested key: the seller uses ordinary
+  certificate validation and does not check that the gateway's TLS key equals the attested `e2e_pubkey`.
+  The attestations therefore do not prove that your request took that path.
+- On the AntSeed path the gateway's quote is checked for genuineness and for its binding to your nonce and
+  its TLS key, but not against approved gateway measurements; use `pcverify` (below) for that.
+- The seller's identity key is provisioned by the operator through an encrypted environment variable, not
+  generated inside the CVM. Signatures made with it (the evidence bundle and the per-response receipts)
+  prove possession of that key, not that the signing happened inside the enclave.
 - The gateway quote proves the gateway, not the model provider behind it. The gateway itself verifies the
   provider on every request (TDX quote, allowlisted OS image, on-chain signer, response signature), but a
   buyer cannot check that through AntSeed.
