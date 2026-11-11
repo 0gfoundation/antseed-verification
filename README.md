@@ -54,13 +54,6 @@ environment variables.
    rules. `seller-bound` checks the seller's AntSeed identity signature over the nonce and the evidence
    bundle.
 
-   **Known issue (November 2026):** this seller's host runs QEMU 9.2.1. Its RTMR1 and RTMR2 match the
-   official dstack 0.6.1 release, but its MRTD and RTMR0 depend on the host's QEMU version and virtual
-   hardware and are not yet in the verifier's approved list, which was computed for one host profile
-   (QEMU 8.2.2). Buyers on antseed-verifier 0.1.6 or later therefore currently report
-   `seller-node-tee-genuine` as failed for this peer. Supporting other host profiles is being discussed
-   in [Antseed/antseed#1571](https://github.com/Antseed/antseed/pull/1571).
-
 2. **Gateway** (`seller-provider-tee-genuine`): the seller fetches a fresh
    quote from the 0G E2EE gateway using the buyer's nonce. The verifier DCAP-verifies it and checks that
    `report_data[0:32] = SHA-256(nonce_hex ‖ e2e_pubkey_b64)` (`nonce-pubkey-sha256-v1`), where
